@@ -7,6 +7,8 @@ from keras import layers, models
 import tkinter as tk
 from tkinter import filedialog
 import matplotlib.pyplot as plt
+import os
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 
 # Load the MNIST dataset
 (X_train, Y_train), (X_test, Y_test) = mnist.load_data()
@@ -21,7 +23,8 @@ X_test = np.expand_dims(X_test, axis=-1)
 
 # Define the CNN model
 model = models.Sequential([
-    layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+    layers.Input(shape=(28, 28, 1)),  # Use explicit Input layer
+    layers.Conv2D(32, (3, 3), activation='relu'),
     layers.MaxPooling2D((2, 2)),
     layers.Conv2D(64, (3, 3), activation='relu'),
     layers.MaxPooling2D((2, 2)),
@@ -72,19 +75,12 @@ def predict_digits(digit_images):
     predictions = []
     for img in digit_images:
         img = np.reshape(img, [1, 28, 28, 1])  # Reshape for model input
-        input_prediction = model.predict(img)
+        input_prediction = model.predict(img, verbose=0)  # Suppress progress bar
         input_pred_label = np.argmax(input_prediction)
         predictions.append(input_pred_label)
     return predictions
 
-import os
-
-if os.name == 'nt':  # For Windows
-    from ctypes import windll
-    windll.shcore.SetProcessDpiAwareness(1)  # Fixes display scaling issues
-
-
-# Create a Tkinter window
+# Creating a Tkinter window
 def upload_image():
     """Uploads an image using a file dialog."""
     root = tk.Tk()
@@ -103,7 +99,7 @@ def upload_image():
         exit()
     return image
 
-# Main program flow
+#image upload
 input_image = upload_image()
 
 # Show the input image
